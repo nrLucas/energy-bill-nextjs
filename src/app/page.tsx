@@ -1,95 +1,85 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import Link from "next/link";
 
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+import React from "react";
+import { Grid, Typography, Button, Box, Card, CardContent } from "@mui/joy";
+import { FaArrowRight } from "react-icons/fa6";
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+const Home: React.FC = () => {
+    const [aggregatedData, setAggregatedData] = React.useState<any>(false);
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+    React.useEffect(() => {
+        const fetchAggregatedData = async () => {
+            try {
+                const response = await fetch("http://localhost:3001/upload/aggregated-data");
+                const result = await response.json();
+                if (result) console.log("result", result);
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+                setAggregatedData(result);
+            } catch (error) {
+                console.error("Erro ao buscar dados agregados", error);
+            }
+        };
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
+        fetchAggregatedData();
+    }, []);
+    return (
+        <Grid container display="flex" spacing={2}>
+            <Grid xs={12} display="flex" justifyContent="space-between" alignItems="center">
+                <Typography level="h1">Dashboard</Typography>
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
-}
+                <Link href="/faturas">
+                    <Button variant="soft">
+                        <Typography level="h4"> Faturas</Typography> <FaArrowRight style={{ paddingLeft: 10, paddingTop: 2 }} />
+                    </Button>
+                </Link>
+            </Grid>
+            {!!aggregatedData && (
+                <>
+                    <Grid xs={12} pt={5}>
+                        <Box
+                            sx={{
+                                width: "100%",
+                                maxWidth: 700,
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+                                gap: 2,
+                            }}
+                        >
+                            <Card variant="outlined">
+                                <CardContent>
+                                    <Typography level="title-md">Consumo de Energia Elétrica Total</Typography>
+                                    <Typography level="h4">{aggregatedData.totalElectricEnergyConsumption.toFixed(2)} KWh</Typography>
+                                </CardContent>
+                            </Card>
+
+                            <Card variant="outlined">
+                                <CardContent>
+                                    <Typography level="title-md">Total de Energia Compensada</Typography>
+                                    <Typography level="h4">{aggregatedData.totalCompensatedEnergy.toFixed(2)} KWh</Typography>
+                                </CardContent>
+                            </Card>
+
+                            <Card variant="soft">
+                                <CardContent>
+                                    <Typography level="title-md"> Valor Total sem GD</Typography>
+                                    <Typography level="h4">{aggregatedData.totalValueWithoutGD.toFixed(2)} KWh</Typography>
+                                </CardContent>
+                            </Card>
+
+                            <Card variant="soft">
+                                <CardContent>
+                                    <Typography level="title-md"> Total de Economia GD</Typography>
+                                    <Typography level="h4">{-1 * aggregatedData.totalGDSavings.toFixed(2)} KWh</Typography>
+                                </CardContent>
+                            </Card>
+                        </Box>
+                    </Grid>
+                </>
+            )}
+        </Grid>
+    );
+};
+
+export default Home;
+
